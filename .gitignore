@@ -1,0 +1,11 @@
+# Materialized agent skills — installed/regenerable from skills-lock.json
+# (pinned by hash from mattpocock/skills). Treated as dependencies, not source.
+/.claude/skills/
+/.agents/skills/
+
+# Machine-local agent settings — never commit (may hold secrets/overrides)
+*.local.json
+
+# OS / editor cruft
+.DS_Store
+*.swp
