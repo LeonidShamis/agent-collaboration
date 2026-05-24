@@ -78,6 +78,21 @@ the Coding Agent continues → … → `control done`. No human input required.
 The deterministic machinery behind the loop (oldest-first delivery, ack-after-send, reply
 threading, `control:done` termination) is covered automatically by `test/session.test.ts`.
 
+## Course-correction: steer the Coding Agent through the Persona (`#4`)
+
+While the collaboration runs, type **prose** into the **Persona Agent's** prompt to inject a
+message to the Coding Agent — e.g. *"also add a metrics counter"*. A `UserPromptSubmit` hook
+(shipped with the plugin) relays it verbatim as a `direct` message and suppresses the local
+turn, confirming with *"→ forwarded to Coding Agent"*. The Coding Agent picks it up on its
+next tick and acts on it with your authority.
+
+- This is occasional steering; the Persona's dominant mode is still auto-answering.
+- **Slash commands are not relayed** — they bypass `UserPromptSubmit`, so `/loop`,
+  `/collab:persona-watch`, etc. work normally.
+- The hook self-scopes by `COLLAB_ROLE`, so it only fires for the Persona; the Coding Agent's
+  prompts (including the initial task) pass through untouched. No extra setup — hooks run
+  unsandboxed, so no allowlist entry is needed for the relay itself.
+
 ## Fallback: hand-playing the Persona (no second agent)
 
 Drive the Persona from a plain shell (the `collab` bin is only on `PATH` inside a
