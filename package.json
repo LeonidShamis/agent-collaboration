@@ -8,7 +8,7 @@
     "collab": "./src/cli.ts"
   },
   "scripts": {
-    "collab": "bun run ./src/cli.ts",
+    "collab": "bun ./src/cli.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },

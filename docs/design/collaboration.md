@@ -129,7 +129,13 @@ made consistent and decisive, then sharpened by expert depth."
     → `ack`.
 - **Idempotency:** `ack` after the response is sent (at-least-once); a scheduled poll never
   interrupts an in-flight turn, so no double-processing in normal operation.
-- **Startup order:** arm both watchers, then type the task into the Coding Agent.
+- **Protocol delivery (clarified in #2):** the Coding Agent's collaboration protocol
+  ("route questions through `collab` when blocked; send `control done` when complete") lives
+  **inside the `/coding-watch` command**, which `/loop` re-injects every tick — so it stays
+  ambient across all turns without a launch-time system prompt (the Coding Agent remains
+  plain Claude Code, per point 2). This makes the startup order load-bearing.
+- **Startup order:** arm the watcher(s) **first** (`/loop 1m /coding-watch`) so the protocol
+  is in context, **then** type the task into the Coding Agent.
 
 - **Persona's two input paths (independent):**
   - *Automatic answering — the dominant mode:* `/loop 1m /persona-watch` polls the Inbox and
