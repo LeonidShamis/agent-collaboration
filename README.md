@@ -41,7 +41,8 @@ design rationale.
   built-in `bun:sqlite` (no external dependencies).
 - **[Claude Code](https://code.claude.com)** — two sessions, with the **`/loop`** recurring-
   command capability for the watch loops. (No `/loop`? Re-run the watch command manually each
-  interval instead.) Note the `ScheduleWakeup` floor is **60s**, so a round-trip is ~1–2 min.
+  interval instead.) The watch interval is **≥60s** (`/loop 1m` schedules a recurring job),
+  so a round-trip is ~1–2 min.
 
 ## Install
 
@@ -173,7 +174,8 @@ inbox). Scoped by `collaboration_id`. See
 
 ## Notes & limitations
 
-- **60s loop floor** (Claude Code `ScheduleWakeup`) — collaboration is deliberate, not snappy.
+- **≥60s loop interval** (`/loop` schedules a recurring job, min ~1 min) — collaboration is
+  deliberate, not snappy.
 - **Termination is manual:** `done` stops both loops, or stop with `/collab:stop` / Ctrl-C.
   Goal-based termination (Claude Code `/goal`) is a planned enhancement.
 - **The Persona is "blind"** by default (its own code-free directory) — it answers from the
