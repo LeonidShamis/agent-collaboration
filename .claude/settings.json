@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun run --silent collab:*)",
+      "Bash(bun run collab:*)"
+    ]
+  }
+}
