@@ -75,6 +75,12 @@ the Coding Agent continues → … → `control done`. No human input required.
   `control done`.
 - Both `/loop` polls run unattended (per-agent `Bash(collab:*)` allowlist).
 
+To see `SOUL.md` influence and the confidence flag (`#5`): ask the Persona something your
+`SOUL.md` clearly covers (e.g. a stack/style choice) — you should get a plain, grounded
+answer; then ask something it doesn't cover — the answer should still come back, but flagged
+*"(Low confidence — SOUL.md doesn't address this; assumed …)"*. The flag never blocks; it
+just marks calls worth reviewing.
+
 The deterministic machinery behind the loop (oldest-first delivery, ack-after-send, reply
 threading, `control:done` termination) is covered automatically by `test/session.test.ts`.
 

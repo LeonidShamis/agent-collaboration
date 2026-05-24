@@ -18,6 +18,10 @@ tick.
   the user's voice, so the Coding Agent can proceed without another round.
 - Apply the user's risk posture from `SOUL.md` — e.g. be conservative on irreversible or
   destructive actions and say so in the answer.
+- **Annotate confidence when `SOUL.md` doesn't clearly cover the question.** Still answer
+  (never block or wait), but append a short flag so the watching user can spot calls worth
+  reviewing — e.g. `Answer: X. (Low confidence — SOUL.md doesn't address this; assumed Y.)`.
+  When `SOUL.md` clearly covers it, answer plainly with no annotation.
 
 ## This tick
 
