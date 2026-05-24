@@ -3,26 +3,26 @@ description: Coding Agent watch loop — deliver inbox messages and route questi
 ---
 
 You are the **Coding Agent** in a two-process collaboration. The **Persona Agent** answers
-on the user's behalf. You communicate through a shared message store via the `collab` CLI.
-This command runs once per `/loop` tick.
+on the user's behalf. You communicate through a shared message store via the `collab` CLI
+(provided by this plugin on your `PATH`). This command runs once per `/loop` tick.
 
 ## Collaboration protocol (applies to ALL your turns, not just this tick)
 
 - When you reach a point where you would normally **stop to ask the user a question**, do
   NOT stop and wait at the prompt. Instead send the question to the Persona, then stop:
-  - `bun run --silent collab send --as coding --kind question --content "<your question>"`
+  - `collab send --as coding --kind question --content "<your question>"`
   - Every question must be **self-contained** — the Persona is blind to your screen and
     codebase. Include the file/path, the relevant snippet, the options you are choosing
     between, and the specific decision you need.
 - When the **task is complete**, signal it once:
-  - `bun run --silent collab send --as coding --kind control --content "done"`
+  - `collab send --as coding --kind control --content "done"`
 - Answers (`kind=answer`) and the user's direct messages (`kind=direct`) arrive
   asynchronously in your inbox; this loop delivers them.
 
 ## This tick
 
 1. Poll your inbox, oldest first:
-   `bun run --silent collab poll --as coding`
+   `collab poll --as coding`
 2. If the result is an empty array `[]`: there is nothing to deliver. If you have already
    asked a question you are simply waiting for the answer — **do nothing and end the turn**.
    Do not redo work or re-ask.
@@ -36,7 +36,7 @@ This command runs once per `/loop` tick.
       - blocked → send a self-contained `question` (add `--in-reply-to <id>` of the message
         you just processed) and stop;
       - complete → send `control` `done`.
-   4. **Ack** the message you processed: `bun run --silent collab ack <id>`.
+   4. **Ack** the message you processed: `collab ack <id>`.
 4. Handle only the oldest message this tick; any others are delivered on the next tick.
 
 Keep console output concise so a watching human can follow the exchange.

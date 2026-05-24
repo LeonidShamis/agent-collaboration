@@ -1,0 +1,6 @@
+{
+  "name": "collab",
+  "description": "Two-process Coding Agent / Persona Agent collaboration over a shared SQLite message bus.",
+  "version": "0.1.0",
+  "author": { "name": "Leonid Shamis" }
+}

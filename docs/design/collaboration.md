@@ -107,11 +107,17 @@ made consistent and decisive, then sharpened by expert depth."
   - *Planned path to a code-aware Persona:* since the user trusts the Coding Agent for all
     edits, the only enhancement needed is a **read-only** pointer to where the code lives.
 
+- **Packaging — a Claude Code plugin (ADR-0002):** the whole capability is a plugin (this
+  repo *is* the plugin: `.claude-plugin/plugin.json`, `bin/`, `commands/`, `hooks/`, CLI in
+  `src/`). Each agent enables it in its own directory with `claude --plugin-dir <repo>`,
+  which puts a `bin/collab` wrapper on the Bash `PATH` and provides the namespaced commands
+  `/collab:coding-watch` and `/collab:persona-watch`. This is what lets the blind Persona —
+  in its own code-free directory — still reach the CLI.
 - **Interface boundary:** the only user-facing surface is **slash commands** (and Claude
   Code **hooks**). The `collab` CLI is internal plumbing — never invoked directly at the
-  prompt; the slash command's skill runs it via Bash. The `collab` CLI is allowlisted in
-  `.claude/settings.json` so the `/loop` poll runs unattended (no per-minute permission
-  prompt).
+  prompt; the command runs it via Bash. Plugins **cannot** grant permissions, so each agent
+  directory's `.claude/settings.json` allowlists `Bash(collab:*)` so the `/loop` poll runs
+  unattended; hook-invoked CLI calls run unsandboxed and need no allowlist.
 - **`collab` CLI (bun/TypeScript), reads `COLLAB_DB` from env:**
   - `collab init` — create DB + `messages` table if missing
   - `collab send --as <role> --kind <k> --content <text> [--in-reply-to <id>]` — enqueue to
@@ -121,24 +127,24 @@ made consistent and decisive, then sharpened by expert depth."
   - `collab dump [--jsonl]` — full history
 - **Two role-specific slash commands** (chosen over one shared skill — role confusion would
   be catastrophic, so the role is explicit in the command itself):
-  - `/coding-watch` (armed via `/loop 1m /coding-watch`): poll → print → continue the task
+  - `/collab:coding-watch` (armed via `/loop 1m /collab:coding-watch`): poll → print → continue the task
     in-session with the message as input → on a question `collab send … --kind question`;
     on completion `collab send … --kind control --content done` → `ack`.
-  - `/persona-watch` (armed via `/loop 1m /persona-watch`): poll → print → answer as the
+  - `/collab:persona-watch` (armed via `/loop 1m /collab:persona-watch`): poll → print → answer as the
     user (`SOUL.md` is in the system prompt) → `collab send … --kind answer --in-reply-to`
     → `ack`.
 - **Idempotency:** `ack` after the response is sent (at-least-once); a scheduled poll never
   interrupts an in-flight turn, so no double-processing in normal operation.
 - **Protocol delivery (clarified in #2):** the Coding Agent's collaboration protocol
   ("route questions through `collab` when blocked; send `control done` when complete") lives
-  **inside the `/coding-watch` command**, which `/loop` re-injects every tick — so it stays
+  **inside the `/collab:coding-watch` command**, which `/loop` re-injects every tick — so it stays
   ambient across all turns without a launch-time system prompt (the Coding Agent remains
   plain Claude Code, per point 2). This makes the startup order load-bearing.
-- **Startup order:** arm the watcher(s) **first** (`/loop 1m /coding-watch`) so the protocol
+- **Startup order:** arm the watcher(s) **first** (`/loop 1m /collab:coding-watch`) so the protocol
   is in context, **then** type the task into the Coding Agent.
 
 - **Persona's two input paths (independent):**
-  - *Automatic answering — the dominant mode:* `/loop 1m /persona-watch` polls the Inbox and
+  - *Automatic answering — the dominant mode:* `/loop 1m /collab:persona-watch` polls the Inbox and
     auto-replies to the Coding Agent. Runs regardless of whether the human is present.
   - *Occasional course-correction:* a **`UserPromptSubmit` hook on the Persona only** catches
     free-text the human types, runs `collab send --as persona --kind direct`, **blocks** the
@@ -175,7 +181,7 @@ made consistent and decisive, then sharpened by expert depth."
   5. Decision principles & **risk posture** for irreversible/destructive actions (the
      in-`SOUL.md` substitute for an escalation gate)
   6. Voice (terse vs. detailed)
-- **Behavior lives in `/persona-watch`, not `SOUL.md`:** answer as the user; produce answers
+- **Behavior lives in `/collab:persona-watch`, not `SOUL.md`:** answer as the user; produce answers
   the Coding Agent can act on; **annotate confidence/assumptions** when `SOUL.md` doesn't
   clearly cover a question (e.g. "Answer: X. (Low confidence — assumed Y.)") — never blocks,
   just makes reactive monitoring efficient. This keeps `SOUL.md` swappable.
@@ -184,10 +190,10 @@ made consistent and decisive, then sharpened by expert depth."
 
 - **Coding Agent → self-contained questions** (the Persona is blind): carry the file/path,
   the relevant snippet, the options considered, and the specific decision needed — never a
-  context-free "which approach here?". Lives in `/coding-watch`.
+  context-free "which approach here?". Lives in `/collab:coding-watch`.
 - **Persona → directly actionable answers**: a clear decision + brief rationale in the
   user's voice, plus the confidence annotation when uncertain, so the Coding Agent can act
-  without another round. Lives in `/persona-watch`.
+  without another round. Lives in `/collab:persona-watch`.
 
 ## Minor decisions (resolved)
 
