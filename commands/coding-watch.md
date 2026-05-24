@@ -14,8 +14,11 @@ on the user's behalf. You communicate through a shared message store via the `co
   - Every question must be **self-contained** — the Persona is blind to your screen and
     codebase. Include the file/path, the relevant snippet, the options you are choosing
     between, and the specific decision you need.
-- When the **task is complete**, signal it once:
+- When the **task is complete**, signal it once and then stop watching:
   - `collab send --as coding --kind control --content "done"`
+  - Then **end this watch loop** — cancel the recurring `/loop` so no further ticks fire. The
+    collaboration is over (the Persona stops on `done` too). To steer further afterwards,
+    re-arm the loop and send a new message.
 - Answers (`kind=answer`) and the user's direct messages (`kind=direct`) arrive
   asynchronously in your inbox; this loop delivers them.
 
@@ -36,7 +39,8 @@ on the user's behalf. You communicate through a shared message store via the `co
    3. Work until you either need to ask again or finish:
       - blocked → send a self-contained `question` (add `--in-reply-to <id>` of the message
         you just processed) and stop;
-      - complete → send `control` `done`.
+      - complete → send `control` `done`, then **end the watch loop** (cancel the recurring
+        `/loop`; the collaboration is over).
    4. **Ack** the message you processed: `collab ack <id>`.
 4. Handle only the oldest message this tick; any others are delivered on the next tick.
 

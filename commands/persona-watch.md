@@ -34,8 +34,9 @@ tick.
    2. If `kind` is `question`: compose your answer as above and send it, threaded to the
       question:
       `collab send --as persona --kind answer --in-reply-to <id> --content "<your answer>"`
-   3. If `kind` is `control` (e.g. `done`): the collaboration is complete — print that and do
-      **not** send an answer.
+   3. If `kind` is `control` (e.g. `done`): the collaboration is complete — print that, do
+      **not** send an answer, and **end this watch loop** (cancel the recurring `/loop` so no
+      further ticks fire).
    4. **Ack** the message you processed: `collab ack <id>`.
 4. Handle only the oldest message this tick; any others are delivered on the next tick.
 

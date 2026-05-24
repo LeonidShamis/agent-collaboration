@@ -86,8 +86,10 @@ made consistent and decisive, then sharpened by expert depth."
     otherwise idles. After sending a `question`, the Coding Agent simply has an empty Inbox
     until the `answer` arrives — "blocked" needs no special state.
   - *Termination:* the Coding Agent emits a `control` message (`"done"`) when it judges the
-    task complete; the Persona prints completion and both loops stop. A manual stop
-    (`/collab-stop` or Ctrl-C) is always available.
+    task complete and stops its own loop; the Persona stops on receiving `done`. Both halt —
+    clean mutual shutdown. A manual stop is always available: **`/collab:stop`** (a slash
+    command, so it is never relayed — found in a stress smoke that prose "stop" gets relayed
+    to the Coding Agent) or Ctrl-C. To steer after `done`, re-arm the loop(s).
   - *Runaway guard:* **none automated for now** — the user monitors both consoles and
     interrupts from either prompt if needed.
   - *Planned enhancement:* replace manual watching with **goal-based termination** — define
