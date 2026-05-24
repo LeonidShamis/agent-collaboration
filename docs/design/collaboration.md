@@ -40,11 +40,11 @@ made consistent and decisive, then sharpened by expert depth."
   appends to Claude Code's built-in system prompt; `CLAUDE.md` still layers on top as
   injected context. No custom mechanism needed.
 - **Execution model (point 4):** Core Claude Code cannot watch files or run an event loop;
-  it runs one turn and exits. The repo's installed **`/loop`** skill (on top of the
-  `ScheduleWakeup` tool) lets an interactive session re-invoke a slash command on an
-  interval (≥60s floor; a scheduled wake fires only after the current turn completes). Each
-  agent runs a slash command that starts a `/loop` poller over its inbox. No external
-  orchestrator.
+  it runs one turn and exits. Claude Code's **`/loop`** re-invokes a slash command on a
+  recurring interval (≥60s; `/loop 1m` schedules a recurring job, observed cancelled via
+  `CronDelete` on `done` / `/collab:stop`). A scheduled run fires only after the current turn
+  completes. Each agent runs a slash command that starts a `/loop` poller over its inbox. No
+  external orchestrator.
 - **Both agents are interactive** (point 5 / Q2): the user runs both as interactive Claude
   Code processes and watches both consoles live; SQLite holds transport + full history.
 - **Send rules:**
@@ -203,7 +203,7 @@ made consistent and decisive, then sharpened by expert depth."
 
 ## Minor decisions (resolved)
 
-- **Poll interval = 1 min** (the `ScheduleWakeup` floor).
+- **Poll interval = 1 min** (the `/loop` minimum recurring interval).
 - **`collaboration_id`** = a shared `COLLAB_ID` env var passed identically to both processes,
   default `"default"` for v1; multi-collaboration later = more IDs / more DB files.
 - **SQLite hardening:** WAL mode + `busy_timeout` (~5s) so the two processes never collide
