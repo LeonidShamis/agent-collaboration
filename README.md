@@ -1,5 +1,7 @@
 # collab — Coding Agent ↔ Persona Agent collaboration
 
+[![tests](https://github.com/LeonidShamis/agent-collaboration/actions/workflows/tests.yml/badge.svg)](https://github.com/LeonidShamis/agent-collaboration/actions/workflows/tests.yml)
+
 A Claude Code plugin that lets a coding agent collaborate with **you** — even when you're not
 there. When the coding agent hits a question it would normally stop and ask you, a *second*
 Claude Code process answers **on your behalf**, grounded in a `SOUL.md` that captures your
