@@ -27,7 +27,8 @@ on the user's behalf. You communicate through a shared message store via the `co
    asked a question you are simply waiting for the answer — **do nothing and end the turn**.
    Do not redo work or re-ask.
 3. Otherwise take the **oldest** message (the first element) and:
-   1. **Print it** so the user can watch: show its `kind`, `id`, and `content`.
+   1. **Print it** as a readable line so the user can watch, e.g.
+      `[<sender> · <kind> #<id>] <content>`.
    2. Treat its `content` as input **exactly as if the user had typed it at your prompt**,
       and continue your task in this session (your prior context persists across ticks).
       `answer` = the Persona's decision; `direct` = the user speaking literally (treat it
