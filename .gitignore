@@ -6,6 +6,15 @@
 # Machine-local agent settings — never commit (may hold secrets/overrides)
 *.local.json
 
+# Node / bun
+node_modules/
+
+# Runtime Message Store (collaboration DB) and any stray SQLite files
+.collab/
+*.db
+*.db-wal
+*.db-shm
+
 # OS / editor cruft
 .DS_Store
 *.swp

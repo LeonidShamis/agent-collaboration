@@ -1,0 +1,19 @@
+{
+  "name": "collab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Message bus CLI for the agent-collaboration Coding Agent / Persona Agent system",
+  "bin": {
+    "collab": "./src/cli.ts"
+  },
+  "scripts": {
+    "collab": "bun run ./src/cli.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "latest"
+  }
+}
