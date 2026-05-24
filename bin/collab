@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# collab — thin wrapper that runs the bundled bun/TypeScript CLI.
+#
+# Added to the Bash tool's PATH while the plugin is enabled, so commands and the
+# user can invoke `collab <args>` from any directory. Resolves the plugin root
+# from this script's own location (works whether the plugin is loaded via
+# --plugin-dir or installed under ~/.claude/plugins), so it does not depend on
+# CLAUDE_PLUGIN_ROOT being set. Reads COLLAB_DB / COLLAB_ID from the environment.
+set -euo pipefail
+
+script="$(readlink -f "${BASH_SOURCE[0]}")"
+root="$(cd "$(dirname "$script")/.." && pwd)"
+exec bun "$root/src/cli.ts" "$@"
