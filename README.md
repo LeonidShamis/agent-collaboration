@@ -134,14 +134,25 @@ collab init                                              # create the store (ide
 collab send --as <role> --kind <k> --content <text> [--in-reply-to <id>]
 collab poll --as <role>                                  # unprocessed messages for <role> (JSON)
 collab ack <id>                                          # mark processed
-collab dump [--jsonl] [--all]                            # full history (--all ignores COLLAB_ID)
+collab dump [--jsonl] [--all]                            # full history as JSON (--all ignores COLLAB_ID)
+collab show [--follow] [--all]                           # chat-style timeline; --follow tails live
 ```
 
 `<role>` ∈ `coding | persona`; `<k>` ∈ `question | answer | direct | control`.
 
-> Debugging tip: if `dump` shows nothing, you're scoped to the wrong `COLLAB_ID` — use
-> `collab dump --all` to see everything in the store. Outside a plugin-enabled session the
-> bare `collab` isn't on `PATH`; call it as `bun /abs/path/to/agent-collaboration/src/cli.ts`.
+**Watching a run.** `collab show` is the friendly view — a chat-style timeline (Coding
+flush-left, Persona indented, colored by role). It auto-detects a terminal: colored when
+shown directly, plain when piped, so paging works cleanly:
+
+```bash
+collab show                 # colored timeline (scoped to COLLAB_ID)
+collab show | less -R       # page through long history (use less -R to keep colors)
+collab show --follow        # live tail — stream new messages until Ctrl-C
+```
+
+> Debugging tip: if `show`/`dump` is empty, you're scoped to the wrong `COLLAB_ID` — add
+> `--all` to see every collaboration in the store. Outside a plugin-enabled session the bare
+> `collab` isn't on `PATH`; call it as `bun /abs/path/to/agent-collaboration/src/cli.ts`.
 
 ## `SOUL.md`
 

@@ -61,6 +61,23 @@ test("CLI: dump --all returns messages across all collaborations; plain dump sta
   rmSync(dir, { recursive: true, force: true });
 });
 
+test("CLI: show renders a plain chat timeline when piped (no ANSI), scoped by COLLAB_ID", () => {
+  const dir = mkdtempSync(join(tmpdir(), "collab-cli-"));
+  const dbPath = join(dir, "collab.db");
+
+  runCli(["send", "--as", "coding", "--kind", "question", "--content", "hello there"], dbPath, "s");
+  const out = runCli(["show"], dbPath, "s").stdout;
+
+  expect(out).toContain("coding → persona · question");
+  expect(out).toContain("hello there");
+  expect(out).not.toContain("\x1b["); // stdout isn't a TTY when spawned → plain
+
+  // scoped: nothing under a different id
+  expect(runCli(["show"], dbPath, "other").stdout).toBe("(no messages yet)");
+
+  rmSync(dir, { recursive: true, force: true });
+});
+
 test("CLI: an invalid kind exits non-zero with a clear message", () => {
   const dir = mkdtempSync(join(tmpdir(), "collab-cli-"));
   const dbPath = join(dir, "collab.db");

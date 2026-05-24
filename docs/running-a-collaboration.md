@@ -116,23 +116,39 @@ next tick and acts on it with your authority.
   prompts (including the initial task) pass through untouched. No extra setup — hooks run
   unsandboxed, so no allowlist entry is needed for the relay itself.
 
-## Fallback: hand-playing the Persona (no second agent)
+## Watching the exchange
 
-Drive the Persona from a plain shell (the `collab` bin is only on `PATH` inside a
-plugin-enabled Claude session, so call the CLI directly with the **same** `COLLAB_DB`
-**and** `COLLAB_ID` — `poll`/`dump`/`send` scope to `COLLAB_ID` and silently default to
-`"default"`, so omitting it will appear to show nothing):
+The friendliest way to follow a run is **`collab show`** — a chat-style timeline (Coding
+flush-left, Persona indented, colored by role). From a third terminal (or any shell), with the
+**same `COLLAB_DB` + `COLLAB_ID`**:
 
 ```bash
 export COLLAB_DB=/abs/path/to/your-project/.collab/collab.db
-export COLLAB_ID=my-feature        # MUST match the collaboration's id
+export COLLAB_ID=feature-x
+alias collab='bun /abs/path/to/agent-collaboration/src/cli.ts'   # bare `collab` is only on PATH inside an agent
+
+collab show              # the whole exchange (colored to a terminal, plain when piped)
+collab show | less -R    # page through a long history (less -R keeps the colors)
+collab show --follow     # live tail — stream new messages until Ctrl-C
+```
+
+`collab show --all` ignores `COLLAB_ID` (every collaboration in the store) — handy if `show`
+looks empty because you're scoped to the wrong id.
+
+## Fallback: hand-playing the Persona (no second agent)
+
+Drive the Persona from a plain shell (call the CLI directly with the **same** `COLLAB_DB`
+**and** `COLLAB_ID` — `poll`/`send` scope to `COLLAB_ID` and silently default to `"default"`):
+
+```bash
+export COLLAB_DB=/abs/path/to/your-project/.collab/collab.db
+export COLLAB_ID=feature-x          # MUST match the collaboration's id
 alias collab='bun /abs/path/to/agent-collaboration/src/cli.ts'
 
-collab poll --as persona                                  # see open questions
+collab show                                               # read the exchange (chat timeline)
+collab poll --as persona                                  # open questions (raw JSON)
 collab send --as persona --kind answer --in-reply-to <id> --content "…your decision…"
 collab ack <id>                                           # mark it handled
-collab dump --jsonl                                       # this collaboration's exchange
-collab dump --all --jsonl                                 # EVERY collaboration in the db (ignores COLLAB_ID)
 ```
 
 > Debugging tip: if `dump` shows nothing, you're almost certainly scoped to the wrong

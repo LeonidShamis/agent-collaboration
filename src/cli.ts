@@ -1,15 +1,35 @@
 #!/usr/bin/env bun
 import { parseArgs } from "node:util";
 import { MessageStore, assertRole, assertKind } from "./store.ts";
+import { renderTimeline } from "./timeline.ts";
 
 function fail(message: string): never {
   console.error(`error: ${message}`);
   process.exit(1);
 }
 
-const USAGE = "expected one of: init | send | poll | ack | dump";
+const USAGE = "expected one of: init | send | poll | ack | dump | show";
 
-function main(): void {
+// `show --follow`: print the timeline, then stream new messages until interrupted.
+async function followTimeline(
+  store: MessageStore,
+  opts: { all: boolean; color: boolean },
+): Promise<void> {
+  const initial = store.dump({ all: opts.all });
+  process.stdout.write(renderTimeline(initial, { color: opts.color }) + "\n");
+  let lastId = initial.length ? initial[initial.length - 1]!.id : 0;
+  for (;;) {
+    await Bun.sleep(1500);
+    const all = store.dump({ all: opts.all });
+    const fresh = all.filter((m) => m.id > lastId);
+    if (fresh.length > 0) {
+      process.stdout.write("\n" + renderTimeline(fresh, { color: opts.color }) + "\n");
+      lastId = all[all.length - 1]!.id;
+    }
+  }
+}
+
+async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
     args: Bun.argv.slice(2),
     allowPositionals: true,
@@ -20,6 +40,7 @@ function main(): void {
       "in-reply-to": { type: "string" },
       jsonl: { type: "boolean", default: false },
       all: { type: "boolean", default: false },
+      follow: { type: "boolean", default: false },
     },
   });
 
@@ -83,6 +104,17 @@ function main(): void {
         break;
       }
 
+      case "show": {
+        // Color when writing to a terminal; plain when piped/redirected.
+        const color = Boolean(process.stdout.isTTY);
+        if (values.follow) {
+          await followTimeline(store, { all: Boolean(values.all), color });
+        } else {
+          console.log(renderTimeline(store.dump({ all: values.all }), { color }));
+        }
+        break;
+      }
+
       default:
         fail(`unknown command "${command}" (${USAGE})`);
     }
@@ -93,4 +125,4 @@ function main(): void {
   }
 }
 
-main();
+main().catch((err) => fail(err instanceof Error ? err.message : String(err)));
