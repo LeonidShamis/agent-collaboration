@@ -1,0 +1,15 @@
+{
+  "name": "agent-collaboration",
+  "owner": { "name": "Leonid Shamis" },
+  "description": "Marketplace hosting the collab plugin — two-process Coding Agent / Persona Agent collaboration.",
+  "plugins": [
+    {
+      "name": "collab",
+      "source": "./",
+      "description": "Two-process Coding Agent / Persona Agent collaboration over a shared SQLite message bus.",
+      "homepage": "https://github.com/LeonidShamis/agent-collaboration",
+      "repository": "https://github.com/LeonidShamis/agent-collaboration",
+      "keywords": ["claude-code", "plugin", "agents", "collaboration", "sqlite", "persona"]
+    }
+  ]
+}

@@ -31,3 +31,8 @@ makes the whole system reusable across future collaborative projects.
 - Hooks ship in `hooks/hooks.json`; the same plugin is enabled in both agents, so role-
   specific hooks (e.g. the Persona-only relay) are scoped by checking `$COLLAB_ROLE` inside
   the hook script.
+- The repo also serves as its own **single-plugin marketplace**: a `.claude-plugin/marketplace.json`
+  (alongside `plugin.json`) lists this plugin with `"source": "./"`, so it installs via
+  `/plugin marketplace add LeonidShamis/agent-collaboration` → `/plugin install
+  collab@agent-collaboration` (both `--plugin-dir` and marketplace install work). The repo is
+  **private**, so marketplace install requires collaborator repo access + git auth.

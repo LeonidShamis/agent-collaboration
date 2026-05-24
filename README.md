@@ -1,6 +1,7 @@
 # collab — Coding Agent ↔ Persona Agent collaboration
 
 [![tests](https://github.com/LeonidShamis/agent-collaboration/actions/workflows/tests.yml/badge.svg)](https://github.com/LeonidShamis/agent-collaboration/actions/workflows/tests.yml)
+[![plugin](https://img.shields.io/badge/plugin-v0.1.0-blue)](https://github.com/LeonidShamis/agent-collaboration/blob/main/.claude-plugin/plugin.json)
 
 A Claude Code plugin that lets a coding agent collaborate with **you** — even when you're not
 there. When the coding agent hits a question it would normally stop and ask you, a *second*
@@ -48,23 +49,36 @@ design rationale.
 
 ## Install
 
-This repo *is* the plugin. Clone it once, then enable it per agent directory:
+The repo is both the **plugin** and a single-plugin **marketplace** (`.claude-plugin/plugin.json`
++ `.claude-plugin/marketplace.json`), so either install path works.
+
+### Via the marketplace (recommended)
+
+```text
+/plugin marketplace add LeonidShamis/agent-collaboration
+/plugin install collab@agent-collaboration
+```
+
+`collab` is the plugin; `agent-collaboration` is the marketplace name. This is repeatable per
+machine and survives across sessions. (Non-interactive equivalents: `claude plugin marketplace
+add …`, `claude plugin install collab@agent-collaboration`.)
+
+> **Private repo:** this repo is private, so a collaborator must have **repo access and git
+> auth** (an SSH key or `gh` login that can clone it) for `/plugin marketplace add` to fetch
+> it. Invite them on GitHub first.
+
+### From a local clone (development, or no GitHub access)
 
 ```bash
 git clone <this-repo> agent-collaboration
 cd agent-collaboration
-bun install            # dev/test deps only; the bundled CLI is dependency-free
-```
-
-Enable the plugin in a Claude Code session by pointing `--plugin-dir` at the clone:
-
-```bash
+bun install                                   # dev/test deps only; the bundled CLI is dependency-free
 claude --plugin-dir /abs/path/to/agent-collaboration
 ```
 
-That puts the `collab` CLI on the Bash `PATH` and registers the commands and hooks. (You can
-also register it as a local marketplace for persistent installs — see the Claude Code plugin
-docs.)
+Either way, enabling the plugin puts the `collab` CLI on the Bash `PATH` and registers the
+commands and hooks. (The CLI is dependency-free, so a marketplace install needs no `bun
+install` — only [bun](https://bun.sh) on the machine.)
 
 ## Configure
 
