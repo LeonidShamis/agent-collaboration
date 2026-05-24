@@ -2,9 +2,12 @@
 //
 // When the user types free-text prose into the Persona Agent's prompt, relay it verbatim to
 // the Coding Agent as a `direct` message and BLOCK the local turn (so the Persona does not
-// "answer" the user's own words). Slash commands bypass UserPromptSubmit entirely, so the
-// watch commands are unaffected. The same plugin is enabled in both agents, so this script
+// "answer" the user's own words). The same plugin is enabled in both agents, so this script
 // self-scopes: it no-ops for any role other than `persona`.
+//
+// NOTE: UserPromptSubmit *does* fire for slash commands (e.g. `/loop`, `/collab:persona-watch`)
+// and bash-bang input (`!cmd`), so we must skip command-style input ourselves — otherwise we
+// would relay + block the watch commands and break the loop. We only relay genuine prose.
 //
 // Reads the hook payload JSON from stdin; reads COLLAB_ROLE / COLLAB_DB / COLLAB_ID from env.
 import { MessageStore } from "../src/store.ts";
@@ -23,8 +26,16 @@ try {
   process.exit(0);
 }
 
+const trimmed = prompt.trim();
+
 // Nothing to relay (e.g. an empty submission) → let it through.
-if (prompt.trim() === "") {
+if (trimmed === "") {
+  process.exit(0);
+}
+
+// Command-style input is not a message to the Coding Agent — let Claude Code handle it
+// (slash commands like `/loop` / `/collab:persona-watch`, and `!`-prefixed bash input).
+if (trimmed.startsWith("/") || trimmed.startsWith("!")) {
   process.exit(0);
 }
 
