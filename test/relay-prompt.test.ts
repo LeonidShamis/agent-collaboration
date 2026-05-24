@@ -61,6 +61,38 @@ test("Coding Agent: the hook is a no-op — nothing relayed, nothing blocked", (
   rmSync(dir, { recursive: true, force: true });
 });
 
+test("Persona: a slash command is NOT relayed — it must execute normally", () => {
+  const { dir, dbPath } = freshDb();
+
+  const res = runHook(
+    { hook_event_name: "UserPromptSubmit", prompt: "/loop 1m /collab:persona-watch" },
+    { COLLAB_DB: dbPath, COLLAB_ROLE: "persona" },
+  );
+
+  const store = MessageStore.open({ dbPath });
+  expect(store.dump()).toHaveLength(0); // not relayed
+  store.close();
+
+  expect(res.exitCode).toBe(0);
+  expect(res.stdout).toBe(""); // not blocked — the command runs
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("Persona: a bang (!) bash-prefixed input is NOT relayed", () => {
+  const { dir, dbPath } = freshDb();
+
+  const res = runHook(
+    { hook_event_name: "UserPromptSubmit", prompt: "!ls -la" },
+    { COLLAB_DB: dbPath, COLLAB_ROLE: "persona" },
+  );
+
+  const store = MessageStore.open({ dbPath });
+  expect(store.dump()).toHaveLength(0);
+  store.close();
+  expect(res.stdout).toBe("");
+  rmSync(dir, { recursive: true, force: true });
+});
+
 test("Persona: an empty prompt is not relayed and not blocked", () => {
   const { dir, dbPath } = freshDb();
 

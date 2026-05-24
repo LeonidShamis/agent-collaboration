@@ -98,8 +98,9 @@ turn, confirming with *"→ forwarded to Coding Agent"*. The Coding Agent picks 
 next tick and acts on it with your authority.
 
 - This is occasional steering; the Persona's dominant mode is still auto-answering.
-- **Slash commands are not relayed** — they bypass `UserPromptSubmit`, so `/loop`,
-  `/collab:persona-watch`, etc. work normally.
+- **Command-style input is not relayed** — the hook skips anything starting with `/` or `!`
+  (slash commands like `/loop`, `/collab:persona-watch`, and `!`-bash input), so they execute
+  normally. Only genuine prose is forwarded.
 - The hook self-scopes by `COLLAB_ROLE`, so it only fires for the Persona; the Coding Agent's
   prompts (including the initial task) pass through untouched. No extra setup — hooks run
   unsandboxed, so no allowlist entry is needed for the relay itself.

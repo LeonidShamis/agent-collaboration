@@ -150,9 +150,11 @@ made consistent and decisive, then sharpened by expert depth."
     free-text the human types, runs `collab send --as persona --kind direct`, **blocks** the
     local turn (the Persona never "answers" the human's own words), and shows a
     `systemMessage` ("→ forwarded to Coding Agent"). Verbatim relay (not re-voiced) — the
-    `direct` kind tells the Coding Agent the human spoke literally. Slash commands bypass
-    this hook (they use `UserPromptExpansion`), so the watcher commands keep working. The
-    Coding Agent has **no** such hook — free-text there is how the human types the task.
+    `direct` kind tells the Coding Agent the human spoke literally. `UserPromptSubmit` *does*
+    fire for slash commands, so the hook **skips command-style input** (anything starting with
+    `/` or `!`) itself — otherwise it would relay + block the watch commands and break the
+    loop (found in a live smoke; see ADR/PR). The Coding Agent has **no** such hook — free-text
+    there is how the human types the task.
 - **Bonus hooks:** `SessionStart` → `collab init` (DB always exists, no manual init);
   optional `PreToolUse` deny on Edit/Write to keep the Persona strictly read-only.
 
