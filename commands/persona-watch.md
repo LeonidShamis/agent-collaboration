@@ -29,7 +29,8 @@ tick.
    `collab poll --as persona`
 2. If the result is an empty array `[]`: nothing to do — **end the turn**.
 3. Otherwise take the **oldest** message (the first element) and:
-   1. **Print it** so the user can watch: show its `kind`, `id`, and `content`.
+   1. **Print it** as a readable line so the user can watch, e.g.
+      `[<sender> · <kind> #<id>] <content>`.
    2. If `kind` is `question`: compose your answer as above and send it, threaded to the
       question:
       `collab send --as persona --kind answer --in-reply-to <id> --content "<your answer>"`

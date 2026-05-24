@@ -12,22 +12,27 @@ the Persona from a shell remains available as a fallback.
 bun install   # dev/test deps only; the bundled CLI itself is dependency-free
 ```
 
-The Message Store is created automatically on first use (`COLLAB_DB` sets its path;
-`COLLAB_ID` sets the collaboration id, default `"default"`). Pick one **absolute**
-`COLLAB_DB` path and use it for *every* process in the collaboration.
+The Message Store lives at `COLLAB_DB`; the plugin's `SessionStart` hook runs `collab init`
+on launch so it always exists (no manual init). `COLLAB_ID` sets the collaboration id
+(default `"default"`). Pick one **absolute** `COLLAB_DB` path and **the same `COLLAB_ID`**
+for *every* process in the collaboration; use a distinct `COLLAB_ID` (or a distinct
+`COLLAB_DB`) per concurrent collaboration.
 
 ## Enabling the plugin in an agent
 
 Launch a Claude Code session with the plugin attached and the collaboration env set:
 
 ```bash
-COLLAB_DB=/abs/path/to/collab.db COLLAB_ROLE=coding \
+COLLAB_DB=/abs/path/to/collab.db COLLAB_ID=my-feature COLLAB_ROLE=coding \
   claude --plugin-dir /abs/path/to/agent-collaboration
 ```
 
-- `--plugin-dir` enables the plugin → the `collab` CLI is on the Bash `PATH` and the
-  `/collab:coding-watch` command is available.
-- `COLLAB_ROLE` (`coding` | `persona`) is read by role-scoped hooks (added in later slices).
+- `--plugin-dir` enables the plugin → the `collab` CLI is on the Bash `PATH`, the
+  `/collab:coding-watch` / `/collab:persona-watch` commands are available, and the plugin's
+  hooks are active.
+- `COLLAB_ROLE` (`coding` | `persona`) scopes the role-specific hooks: the `UserPromptSubmit`
+  relay and the `PreToolUse` read-only guard fire **only** for `persona` (the Persona answers
+  and messages — it never edits files); both are no-ops for `coding`.
 
 Because plugins cannot grant permissions, add an allowlist to **that agent directory's**
 `.claude/settings.json` so the `/loop` poll runs unattended:
@@ -38,14 +43,14 @@ Because plugins cannot grant permissions, add an allowlist to **that agent direc
 
 ## Hands-off round-trip (`#3`: autonomous Persona)
 
-Two Claude Code sessions, same `COLLAB_DB`, both with the plugin enabled.
+Two Claude Code sessions, same `COLLAB_DB` and `COLLAB_ID`, both with the plugin enabled.
 
 **Terminal A — the Coding Agent**, in the project you want worked on:
 
 ```bash
 cd /abs/path/to/your-project
 # .claude/settings.json here allowlists Bash(collab:*)
-COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ROLE=coding \
+COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ID=my-feature COLLAB_ROLE=coding \
   claude --plugin-dir /abs/path/to/agent-collaboration
 ```
 1. Arm the loop **first** so the protocol is in context before the task:
@@ -59,7 +64,7 @@ COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ROLE=coding \
 mkdir -p ~/persona && cd ~/persona
 cp /abs/path/to/agent-collaboration/examples/SOUL.example.md ./SOUL.md   # then edit to be you
 # .claude/settings.json here also allowlists Bash(collab:*)
-COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ROLE=persona \
+COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ID=my-feature COLLAB_ROLE=persona \
   claude --plugin-dir /abs/path/to/agent-collaboration --append-system-prompt-file ./SOUL.md
 ```
 1. Arm the loop: `/loop 1m /collab:persona-watch`
