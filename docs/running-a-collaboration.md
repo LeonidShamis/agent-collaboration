@@ -2,9 +2,9 @@
 
 The collab capability is a **Claude Code plugin** (this repo *is* the plugin). Each agent
 enables it independently in its own working directory, so the same capability drops into any
-project. As slices land, more of this becomes automatic. Today (`#1`, `#2`, `#10`) the
-**Coding Agent** is real and the **Persona** is hand-simulated from a shell; `#3` makes the
-Persona autonomous.
+project. As of `#3` the round-trip is **fully hands-off**: a real Coding Agent and a real
+autonomous Persona Agent collaborate with no human in the loop (you just watch). Hand-playing
+the Persona from a shell remains available as a fallback.
 
 ## One-time (dev) setup
 
@@ -36,26 +36,55 @@ Because plugins cannot grant permissions, add an allowlist to **that agent direc
 { "permissions": { "allow": ["Bash(collab:*)"] } }
 ```
 
-## Manual smoke (`#2`: Coding Agent loop, Persona hand-simulated)
+## Hands-off round-trip (`#3`: autonomous Persona)
 
-**Terminal A — the Coding Agent** (plugin enabled, as above, in the project you want it to
-work on):
+Two Claude Code sessions, same `COLLAB_DB`, both with the plugin enabled.
 
-1. Arm the watch loop **first** so the collaboration protocol is in context before the task:
-   ```
-   /loop 1m /collab:coding-watch
-   ```
-2. Then type the task, e.g. *"Add a rate limiter to the API."*
-3. When stuck, instead of asking you at the prompt it runs `collab send --as coding --kind
-   question …` and stops; each tick it polls and continues when an answer arrives; when done
-   it sends `control done`.
-
-**Terminal B — you, hand-playing the Persona** (a plain shell; the `collab` bin is only on
-`PATH` inside a plugin-enabled Claude session, so invoke the CLI directly with the **same**
-`COLLAB_DB`):
+**Terminal A — the Coding Agent**, in the project you want worked on:
 
 ```bash
-export COLLAB_DB=/abs/path/to/collab.db
+cd /abs/path/to/your-project
+# .claude/settings.json here allowlists Bash(collab:*)
+COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ROLE=coding \
+  claude --plugin-dir /abs/path/to/agent-collaboration
+```
+1. Arm the loop **first** so the protocol is in context before the task:
+   `/loop 1m /collab:coding-watch`
+2. Then type the task, e.g. *"Add a rate limiter to the API."*
+
+**Terminal B — the Persona Agent**, in its own **code-free** directory (blind), with a
+`SOUL.md` to answer as you:
+
+```bash
+mkdir -p ~/persona && cd ~/persona
+cp /abs/path/to/agent-collaboration/examples/SOUL.example.md ./SOUL.md   # then edit to be you
+# .claude/settings.json here also allowlists Bash(collab:*)
+COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ROLE=persona \
+  claude --plugin-dir /abs/path/to/agent-collaboration --append-system-prompt-file ./SOUL.md
+```
+1. Arm the loop: `/loop 1m /collab:persona-watch`
+
+Now watch: the Coding Agent asks → the Persona auto-answers as you (grounded in `SOUL.md`) →
+the Coding Agent continues → … → `control done`. No human input required.
+
+### What this verifies
+
+- The Persona auto-answers **every** question, grounded in `SOUL.md`, with actionable
+  decisions in your voice — no escalation gate, no human in the loop.
+- The Coding Agent consumes those answers, continues in-session, and the run terminates on
+  `control done`.
+- Both `/loop` polls run unattended (per-agent `Bash(collab:*)` allowlist).
+
+The deterministic machinery behind the loop (oldest-first delivery, ack-after-send, reply
+threading, `control:done` termination) is covered automatically by `test/session.test.ts`.
+
+## Fallback: hand-playing the Persona (no second agent)
+
+Drive the Persona from a plain shell (the `collab` bin is only on `PATH` inside a
+plugin-enabled Claude session, so call the CLI directly with the **same** `COLLAB_DB`):
+
+```bash
+export COLLAB_DB=/abs/path/to/your-project/.collab/collab.db
 alias collab='bun /abs/path/to/agent-collaboration/src/cli.ts'
 
 collab poll --as persona                                  # see open questions
@@ -63,16 +92,3 @@ collab send --as persona --kind answer --in-reply-to <id> --content "…your dec
 collab ack <id>                                           # mark it handled
 collab dump --jsonl                                       # watch the whole exchange
 ```
-
-Within ~1 minute Terminal A prints your answer, acts on it, and either asks again or sends
-`done`.
-
-### What this verifies
-
-- The Coding Agent routes questions through `collab` instead of blocking at the prompt.
-- It consumes answers/`direct` messages, continues in-session, and acks them.
-- It terminates with `control done`.
-- The `/loop` poll runs unattended (the per-agent `Bash(collab:*)` allowlist).
-
-The deterministic machinery behind the loop (oldest-first delivery, ack-after-send, reply
-threading, `control:done` termination) is covered automatically by `test/session.test.ts`.
