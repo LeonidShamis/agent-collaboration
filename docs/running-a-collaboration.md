@@ -72,6 +72,17 @@ COLLAB_DB=/abs/path/to/your-project/.collab/collab.db COLLAB_ID=my-feature COLLA
 Now watch: the Coding Agent asks → the Persona auto-answers as you (grounded in `SOUL.md`) →
 the Coding Agent continues → … → `control done`. No human input required.
 
+### Ending it
+
+- **`control done` ends the collaboration:** the Coding Agent sends it and stops its loop;
+  the Persona stops on receiving it. Both halt — clean mutual shutdown.
+- **To stop manually anytime,** run **`/collab:stop`** in either session (it cancels that
+  agent's watch loop). Use the command, **not** prose — on the Persona, prose is relayed to
+  the Coding Agent, so typing "stop the loop" forwards it instead of stopping anything. Ctrl-C
+  is the hard stop.
+- **To steer after `done`,** re-arm the loop(s) and send a new message — `done` has already
+  stopped them.
+
 ### What this verifies
 
 - The Persona auto-answers **every** question, grounded in `SOUL.md`, with actionable
