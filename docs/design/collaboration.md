@@ -124,7 +124,7 @@ made consistent and decisive, then sharpened by expert depth."
     the other agent; prints new id
   - `collab poll --as <role>` — print unprocessed messages for `<role>` as JSON (no ack)
   - `collab ack <id>` — mark processed
-  - `collab dump [--jsonl]` — full history
+  - `collab dump [--jsonl] [--all]` — full history (`--all` ignores `collaboration_id`)
 - **Two role-specific slash commands** (chosen over one shared skill — role confusion would
   be catastrophic, so the role is explicit in the command itself):
   - `/collab:coding-watch` (armed via `/loop 1m /collab:coding-watch`): poll → print → continue the task

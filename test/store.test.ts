@@ -133,3 +133,19 @@ test("messages are scoped by collaboration id within a shared db file", () => {
   b.close();
   rmSync(dir, { recursive: true, force: true });
 });
+
+test("dump({ all: true }) returns messages across every collaboration in the db", () => {
+  const dir = tmpDbDir();
+  const dbPath = join(dir, "collab.db");
+  const a = MessageStore.open({ dbPath, collaborationId: "A" });
+  const b = MessageStore.open({ dbPath, collaborationId: "B" });
+  a.send({ as: "coding", kind: "question", content: "from A" });
+  b.send({ as: "coding", kind: "question", content: "from B" });
+
+  expect(a.dump().map((m) => m.content)).toEqual(["from A"]); // still scoped to A
+  expect(a.dump({ all: true }).map((m) => m.content)).toEqual(["from A", "from B"]);
+
+  a.close();
+  b.close();
+  rmSync(dir, { recursive: true, force: true });
+});

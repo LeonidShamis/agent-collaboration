@@ -108,14 +108,21 @@ next tick and acts on it with your authority.
 ## Fallback: hand-playing the Persona (no second agent)
 
 Drive the Persona from a plain shell (the `collab` bin is only on `PATH` inside a
-plugin-enabled Claude session, so call the CLI directly with the **same** `COLLAB_DB`):
+plugin-enabled Claude session, so call the CLI directly with the **same** `COLLAB_DB`
+**and** `COLLAB_ID` — `poll`/`dump`/`send` scope to `COLLAB_ID` and silently default to
+`"default"`, so omitting it will appear to show nothing):
 
 ```bash
 export COLLAB_DB=/abs/path/to/your-project/.collab/collab.db
+export COLLAB_ID=my-feature        # MUST match the collaboration's id
 alias collab='bun /abs/path/to/agent-collaboration/src/cli.ts'
 
 collab poll --as persona                                  # see open questions
 collab send --as persona --kind answer --in-reply-to <id> --content "…your decision…"
 collab ack <id>                                           # mark it handled
-collab dump --jsonl                                       # watch the whole exchange
+collab dump --jsonl                                       # this collaboration's exchange
+collab dump --all --jsonl                                 # EVERY collaboration in the db (ignores COLLAB_ID)
 ```
+
+> Debugging tip: if `dump` shows nothing, you're almost certainly scoped to the wrong
+> `COLLAB_ID`. Use `collab dump --all` to see everything in the store regardless of id.

@@ -19,6 +19,7 @@ function main(): void {
       content: { type: "string" },
       "in-reply-to": { type: "string" },
       jsonl: { type: "boolean", default: false },
+      all: { type: "boolean", default: false },
     },
   });
 
@@ -73,7 +74,7 @@ function main(): void {
       }
 
       case "dump": {
-        const history = store.dump();
+        const history = store.dump({ all: values.all });
         if (values.jsonl) {
           for (const m of history) console.log(JSON.stringify(m));
         } else {
