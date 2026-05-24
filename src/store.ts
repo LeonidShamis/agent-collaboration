@@ -150,14 +150,18 @@ export class MessageStore {
       .run({ $id: id });
   }
 
-  dump(): Message[] {
-    const rows = this.db
-      .query(
-        `SELECT * FROM messages
-         WHERE collaboration_id = $collaborationId
-         ORDER BY id`,
-      )
-      .all({ $collaborationId: this.collaborationId }) as Record<string, unknown>[];
+  dump(opts: { all?: boolean } = {}): Message[] {
+    const rows = (
+      opts.all
+        ? this.db.query(`SELECT * FROM messages ORDER BY id`).all()
+        : this.db
+            .query(
+              `SELECT * FROM messages
+               WHERE collaboration_id = $collaborationId
+               ORDER BY id`,
+            )
+            .all({ $collaborationId: this.collaborationId })
+    ) as Record<string, unknown>[];
 
     return rows.map(toMessage);
   }

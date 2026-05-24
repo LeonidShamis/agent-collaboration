@@ -5,9 +5,9 @@ import { join } from "node:path";
 
 const CLI = join(import.meta.dir, "../src/cli.ts");
 
-function runCli(args: string[], dbPath: string) {
+function runCli(args: string[], dbPath: string, collabId = "default") {
   const proc = Bun.spawnSync(["bun", "run", CLI, ...args], {
-    env: { ...process.env, COLLAB_DB: dbPath, COLLAB_ID: "default" },
+    env: { ...process.env, COLLAB_DB: dbPath, COLLAB_ID: collabId },
   });
   return {
     stdout: proc.stdout.toString().trim(),
@@ -41,6 +41,22 @@ test("CLI: init → send → poll → ack → dump round-trip via the binary", (
   const lines = runCli(["dump", "--jsonl"], dbPath).stdout.split("\n").filter(Boolean);
   expect(lines).toHaveLength(1);
   expect(JSON.parse(lines[0]).content).toBe("hello");
+
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("CLI: dump --all returns messages across all collaborations; plain dump stays scoped", () => {
+  const dir = mkdtempSync(join(tmpdir(), "collab-cli-"));
+  const dbPath = join(dir, "collab.db");
+
+  runCli(["send", "--as", "coding", "--kind", "question", "--content", "in one"], dbPath, "one");
+  runCli(["send", "--as", "coding", "--kind", "question", "--content", "in two"], dbPath, "two");
+
+  const scoped = JSON.parse(runCli(["dump"], dbPath, "one").stdout);
+  expect(scoped.map((m: { content: string }) => m.content)).toEqual(["in one"]);
+
+  const all = JSON.parse(runCli(["dump", "--all"], dbPath, "one").stdout);
+  expect(all.map((m: { content: string }) => m.content)).toEqual(["in one", "in two"]);
 
   rmSync(dir, { recursive: true, force: true });
 });
